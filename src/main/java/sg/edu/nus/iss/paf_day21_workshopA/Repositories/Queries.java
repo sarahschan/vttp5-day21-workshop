@@ -14,5 +14,12 @@ public class Queries {
         """
             select * from customers
                 where id = ?    
-        """;;
+        """;
+
+
+    public static final String SQL_GET_CUSTOMER_ORDERS = 
+        """
+            select * from orders
+                where customer_id = ?
+        """;
 }

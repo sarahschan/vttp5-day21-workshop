@@ -13,11 +13,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import sg.edu.nus.iss.paf_day21_workshopA.Models.Customer;
+import sg.edu.nus.iss.paf_day21_workshopA.Models.Order;
 import sg.edu.nus.iss.paf_day21_workshopA.Serializers.CustomerJsonSerializer;
+import sg.edu.nus.iss.paf_day21_workshopA.Serializers.OrderJsonSerializer;
 import sg.edu.nus.iss.paf_day21_workshopA.Services.CustomerService;
+import sg.edu.nus.iss.paf_day21_workshopA.Services.OrderService;
+
 
 @RestController
 @RequestMapping("/api")
@@ -28,6 +33,12 @@ public class ApiController {
 
     @Autowired
     CustomerJsonSerializer customerJsonSerializer;
+
+    @Autowired
+    OrderService orderService;
+
+    @Autowired
+    OrderJsonSerializer orderJsonSerializer;
 
     
     @GetMapping(path = "/customers", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -48,13 +59,13 @@ public class ApiController {
             }
 
 
-            JsonArrayBuilder customerJsonArray = Json.createArrayBuilder();
+            JsonArrayBuilder customerJsonArrayBuilder = Json.createArrayBuilder();
 
             for (Customer customer : customers) {
-                customerJsonArray.add(customerJsonSerializer.customerToJson(customer));
+                customerJsonArrayBuilder.add(customerJsonSerializer.customerToJson(customer));
             }
 
-            return ResponseEntity.status(200).body(customerJsonArray.build().toString());
+            return ResponseEntity.status(200).body(customerJsonArrayBuilder.build().toString());
 
 
         } catch (Exception e) {
@@ -102,6 +113,51 @@ public class ApiController {
             return ResponseEntity.status(500).body(errorMessage.toString());
 
         }
+    }
+
+
+    @GetMapping(path = "/customer/{customerId}/orders", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getCustomerOrders(@PathVariable int customerId){
+
+        try {
+            
+            Optional<Customer> customerOpt = customerService.getCustomerById(customerId);
+
+            if (customerOpt.isEmpty()) {
+
+                JsonObject customerNotFound = Json.createObjectBuilder()
+                                                .add("Cusomter_Not_Found", String.format("Customer with ID %d not found", customerId))
+                                                .build();
+
+                return ResponseEntity.status(404).body(customerNotFound.toString());
+
+            }
+
+
+            // new logic here
+            List<Order> orderList = orderService.getCustomerOrders(customerId);
+
+            JsonArrayBuilder ordersJsonArrayBuilder = Json.createArrayBuilder();
+
+            for (Order order : orderList) {
+                ordersJsonArrayBuilder.add(orderJsonSerializer.orderToJson(order));
+            }
+
+            return ResponseEntity.status(200).body(ordersJsonArrayBuilder.build().toString());
+
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            
+            JsonObject errorMessage = Json.createObjectBuilder()
+                                        .add("Internal Server Error", String.format("%s: %s", e.getCause(), e.getMessage()))
+                                        .build();
+
+            return ResponseEntity.status(500).body(errorMessage.toString());
+
+        }
+
     }
 
 }
