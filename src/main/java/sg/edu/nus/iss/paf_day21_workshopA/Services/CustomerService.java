@@ -1,6 +1,7 @@
 package sg.edu.nus.iss.paf_day21_workshopA.Services;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,4 +19,10 @@ public class CustomerService {
     public List<Customer> getAllCustomers(int limit, int offset){
         return customerRepository.getAllCustomers(limit, offset);
     }
+
+
+    public Optional<Customer> getCustomerById(int customerId){
+        return customerRepository.getCustomerById(customerId);
+    }
+    
 }

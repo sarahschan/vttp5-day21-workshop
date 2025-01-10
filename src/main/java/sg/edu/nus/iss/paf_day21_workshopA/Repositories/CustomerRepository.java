@@ -2,6 +2,7 @@ package sg.edu.nus.iss.paf_day21_workshopA.Repositories;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -30,4 +31,19 @@ public class CustomerRepository {
         return customers;
 
     }
+
+
+    public Optional<Customer> getCustomerById(int customerId){
+        
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(Queries.SQL_GET_CUSTOMER_BY_ID, customerId);
+
+        if (rs.next()) {
+            return Optional.of(Customer.toCustomer(rs));
+
+        } else {
+            return Optional.empty();
+        }
+
+    }
+
 }
